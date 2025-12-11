@@ -36,7 +36,11 @@ class AuthService {
             user_id: user.user_id,
             name: user.name,
             email: user.email,
-            role_id: user.role_id
+            role_id: user.role_id,
+             organization_id: user.organization_id,
+            user_status: user.user_status,
+            created_at: user.created_at,
+            updated_at: user.updated_at
         }
        }
     }
