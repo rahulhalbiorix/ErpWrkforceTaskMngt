@@ -1,7 +1,7 @@
 import express from 'express';
 import UsersController from './users.controller.js';
 import { verifyToken } from '../../middleware/auth.middleware.js';
-import { allowRoles } from '../../middleware/registerpermission.middleware.js';
+import { allowRoles } from '../../middleware/reg.permit.middleware.js';
 
 const router = express.Router();
 
