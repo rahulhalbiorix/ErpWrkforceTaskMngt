@@ -105,13 +105,12 @@ class TaskRepository {
     }
 
     // DELETE task
-    static async deleteTask(taskId) {
-        const [result] = await db.query(
-            "DELETE FROM tasks WHERE task_id = ?",
-            [taskId]
-        );
-        return result;
-    }
+   static async deleteTask(taskId) {
+    await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]);
+    const [result] = await db.query("DELETE FROM tasks WHERE task_id = ?", [taskId]);
+    return result;
+}
+
 }
 
 export default TaskRepository;
