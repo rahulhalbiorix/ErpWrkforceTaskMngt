@@ -5,6 +5,8 @@ import authRoutes from './modules/auth/auth.routes.js'
 import orgRoutes from './modules/organizations/org.routes.js';
 import projectRoutes from './modules/projects/prj.routes.js'
 import taskRoutes from './modules/tasks/task.routes.js'
+import commentsRoutes from "./modules/comments/comments.routes.js";
+
 import { swaggerUi, swaggerSpec } from '../src/swagger.js';
 
 
@@ -33,6 +35,8 @@ app.use("/api/orgs", orgRoutes);
 app.use("/api/projects", projectRoutes);
 
 app.use("/api/tasks", taskRoutes);
+
+app.use("/api/comments", commentsRoutes);
 
 // Swagger UI route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
