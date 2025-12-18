@@ -23,25 +23,26 @@ class AuthService {
             {
                 user_id: user.user_id,
                 email: user.email,
-                role_id: user.role_id
+                role: user.role_name
             },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
           
        return {
-         message: "Login successful",
-        token,
-        user: {
-            user_id: user.user_id,
-            name: user.name,
-            email: user.email,
-            role_id: user.role_id,
-             organization_id: user.organization_id,
-            user_status: user.user_status,
-            created_at: user.created_at,
-            updated_at: user.updated_at
-        }
+          success: true,
+          message: 'Login successful',
+          data:{
+            token,
+            user:{
+                userId: user.user_id,
+                userName: user.user_name,
+                email: user.email,
+                roleName: user.role_name,
+                organizationId: user.organization_id,
+                status:user.status
+            }
+          }       
        }
     }
 }
