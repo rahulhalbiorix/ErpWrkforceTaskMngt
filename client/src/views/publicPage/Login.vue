@@ -2,8 +2,8 @@
     <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div class="w-full max-w-5xl overflow-hidden rounded-3xl
              shadow-2xl bg-white grid grid-cols-1 md:grid-cols-2">
-             
-             <!-- LEFT : BRANDING -->
+
+            <!-- LEFT : BRANDING -->
             <div class="hidden md:flex flex-col justify-center px-10
                bg-gradient-to-br from-indigo-700 via-indigo-600 to-indigo-500
                text-white">
@@ -58,22 +58,23 @@
                                 <label class="text-sm font-medium text-gray-700">
                                     Email
                                 </label>
-                                <InputText v-model="form.email" type="email" placeholder="you@company.com"
-                                    class="w-full h-11 mt-1" required />
+                                <InputText v-model="form.email" type="email" class="w-full h-11 mt-1" required />
+
                             </div>
 
                             <!-- Password -->
-                            <div  class="flex  flex-col">
+                            <div class="flex  flex-col">
                                 <label class="text-sm font-medium text-gray-700">
                                     Password
                                 </label>
-                                <Password v-model="form.password" placeholder="••••••••" :feedback="false" toggleMask required />
+                                <Password v-model="form.password" :feedback="false" toggleMask class="w-full mt-1"
+                                    inputClass="w-full h-11 pr-10" required />
                             </div>
 
                             <!-- Login Button -->
                             <Button label="Login" type="submit" class="w-full h-11 mt-2 font-semibold
                        bg-indigo-600 border-none
-                       hover:bg-indigo-700 transition" :loading="isPending" @click="handleLogin" />
+                       hover:bg-indigo-700 transition" :loading="isPending" />
 
                             <!-- Footer -->
                             <div class="pt-4 text-center text-xs text-gray-400">
@@ -95,6 +96,7 @@ import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
+import router from '@/router'
 
 
 const form = reactive({
@@ -105,26 +107,37 @@ const form = reactive({
 
 const store = useAuthStore();
 
-const { mutate, isPending, isError, error } = useLoginMutation()
+const { mutate, isPending, isError } = useLoginMutation()
 
 
 const handleLogin = () => {
     console.log('Login Data:', form);
 
     mutate(form, {
-    onSuccess: (data) => {
-      console.log('Login success:', data);
-       store.setUserToken(data.data.token);
-       store.setIsUserLogin(true);
-       store.setUserRole(data.data.user.roleName)
-       store.setUserId(data.data.user.userId)
-       store.setUserName(data.data.user.userName)
-       store.setUserEmail(data.data.user.email)
-    },
-    onError: (err) => {
-       console.log('Login error:', err);
-    }
-  })
+        onSuccess: (data) => {
+            console.log('Login success:', data);
+            store.setUserToken(data.data.token);
+            store.setIsUserLogin(true);
+            store.setUserRole(data.data.user.roleName)
+            store.setUserId(data.data.user.userId)
+            store.setUserName(data.data.user.userName)
+            store.setUserEmail(data.data.user.email)
+
+            if (data.data.user.roleName === 'Super-Admin') {
+                router.push({ name: 'super-admin-dashboard' })
+            }
+            else if (data.data.user.roleName === 'Admin') {
+                router.push({ name: 'admin-dashboard' })
+            }
+            else {
+                router.push({ name: 'user-dashboard' })
+            }
+
+        },
+        onError: (err) => {
+            console.log('Login error:', err);
+        }
+    })
 
 }
 </script>
