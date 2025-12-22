@@ -5,6 +5,7 @@ import PrimeVue from 'primevue/config'
 import Lara from '@primevue/themes/lara'
 import 'primeicons/primeicons.css'
 import { VueQueryPlugin } from '@tanstack/vue-query'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import App from './App.vue'
 import router from './router'
@@ -18,6 +19,8 @@ app.use(PrimeVue, {
 })
 
 const pinia = createPinia()
+
+pinia.use(piniaPluginPersistedstate);
 app.use(pinia)
 app.use(router)
 app.use(VueQueryPlugin)

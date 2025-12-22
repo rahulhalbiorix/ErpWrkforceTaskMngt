@@ -51,5 +51,7 @@ function setUserEmail(payload:string){
         }
 
 },
- 
+ {
+  persist: true, 
+}
 )
