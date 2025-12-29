@@ -13,3 +13,45 @@ export const loginApi = async(payload:{email:string,password:string}) => {
    
    return response.data;
 }
+
+/* =========================
+   ORGANIZATION APIs
+   ========================= */
+
+/**
+ * Get all organizations
+ */
+
+
+export const getOrganizationsApi = async() => {
+   const response =  await instance.get('/api/orgs'); 
+
+   return response.data;
+}
+
+
+/**
+ * Get organization by ID
+ */
+
+
+
+/**
+ * Create organization
+ */
+
+export const createOrganizationApi = async(payload:{name:string,domain:string , logo_url:string ,status:string }) => {
+   const response = await instance.post('/api/orgs/create', payload);
+
+   return response.data;
+}
+
+
+/**
+ * Update organization
+ */
+
+
+/**
+ * Delete organization
+ */

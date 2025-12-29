@@ -180,7 +180,7 @@ const handleLogin = (values: {email:string,password:string}) => {
             store.setUserEmail(data.data.user.email)
 
             if (data.data.user.roleName === 'Super-Admin') {
-                router.push({ name: 'super-admin-dashboard' })
+                router.push({ name: 'superAdminDashboard' })
             }
             else if (data.data.user.roleName === 'Admin') {
                 router.push({ name: 'admin-dashboard' })

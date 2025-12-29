@@ -5,7 +5,14 @@ class OrgController {
     static async getAllOrgs(req, res) {
         try {
             const orgs = await OrgService.getAllOrgs();
-            res.status(200).json(orgs);
+            res.status(200).json({
+                "success": true,
+                "message": "Organizations fetched successfully",
+                "data": {
+                    data: orgs
+                }
+            }
+            );
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -15,7 +22,8 @@ class OrgController {
         try {
             const organizationData = req.body;
             const org = await OrgService.createOrg(organizationData);
-            res.status(201).json({message: 'Organization created successfully'});
+            res.status(200).json({"success": true,
+                "message": "Organization created successfully"  });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
@@ -26,12 +34,12 @@ class OrgController {
             const { id } = req.params;
             const org = await OrgService.findOrgById(id);
             res.status(200).json(org[0]);
-        } catch (error) {       
+        } catch (error) {
             res.status(500).json({ error: error.message });
         }
-    }    
-    
-    
+    }
+
+
     static async updateOrg(req, res) {
         try {
             const { id } = req.params;

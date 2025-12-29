@@ -34,6 +34,14 @@ function setUserEmail(payload:string){
   userEmail.value = payload
 }
 
+function logOutUser(){
+  userToken.value = ''
+  isUserLogin.value = false
+  userRole.value = ''
+  userId.value = ''
+  userName.value = ''
+  userEmail.value = ''
+}
     
 
     return { userToken,
@@ -47,7 +55,8 @@ function setUserEmail(payload:string){
           setUserRole,
           setUserId,
           setUserName,
-          setUserEmail
+          setUserEmail,
+          logOutUser
         }
 
 },
