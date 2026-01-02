@@ -28,9 +28,16 @@ class OrgService {
         return OrgRepository.updateOrg(id, organizationData);
     }
 
-    static async deleteOrg(id) {
-        return OrgRepository.deleteOrg(id);
+   static async activeInactiveOrg(id, status) {
+        if(id.trim() === '' ){
+            throw new Error('Organization id is required');
+        }
+        if(status.trim() === '' ){
+            throw new Error('Status is required');
+        }
+        return OrgRepository.activeInactiveOrg(id, status);
     }
+
 
 }
 

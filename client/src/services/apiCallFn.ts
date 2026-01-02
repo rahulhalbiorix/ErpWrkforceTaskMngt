@@ -51,7 +51,31 @@ export const createOrganizationApi = async(payload:{name:string,domain:string , 
  * Update organization
  */
 
+export const updateOrganizationApi = async({
+  orgId,
+  payload
+}:{
+  orgId:string,
+  payload:{name?:string,domain?:string , logo_url?:string ,status?:string }
+}) => {
+   const response = await instance.put(`/api/orgs/update/${orgId}` , payload); 
+
+   return response.data;
+}
+
 
 /**
- * Delete organization
+ *  activate Inactivate organization
  */
+
+
+export const toggleOrganizationStatusApi = async({
+  orgId,
+  status
+}:{
+  orgId:string , status:string
+} ) => {
+   const response = await instance.patch(`/api/orgs/status/${orgId}` , {status});
+
+   return response.data;
+}

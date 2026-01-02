@@ -45,21 +45,25 @@ class OrgController {
             const { id } = req.params;
             const organizationData = req.body;
             const org = await OrgService.updateOrg(id, organizationData);
-            res.status(200).json(org);
+            res.status(200).json({"success": true,
+                "message": "Organization updated successfully"  });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    static async deleteOrg(req, res) {
+    static async activeInactiveOrg(req, res) {
         try {
             const { id } = req.params;
-            await OrgService.deleteOrg(id);
-            res.status(204).send();
+            const { status } = req.body;
+            const org = await OrgService.activeInactiveOrg(id, status);
+            res.status(200).json({"success": true,
+                "message": `Organization ${status} successfully`  });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
-    }
+  
 }
 
+}
 export default OrgController;

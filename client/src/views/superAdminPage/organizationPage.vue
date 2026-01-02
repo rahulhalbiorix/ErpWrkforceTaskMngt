@@ -49,7 +49,8 @@
 <!-- {{ organizations }} -->
 
 <DataTable
-  :value="isLoading ? skeletonRows : organizations"
+class="org-table"
+:value="isLoading ? skeletonRows : organizations"
   rowHover
   responsiveLayout="scroll"
   size="small"
@@ -143,9 +144,7 @@
         'status-badge',
         data[col.field] === 'active'
           ? 'bg-green-100 text-green-800'
-          : data[col.field] === 'pending'
-          ? 'bg-yellow-100 text-yellow-800'
-          : 'bg-gray-100 text-gray-800'
+          : 'bg-red-100 text-red-800'
       ]"
     >
       {{ data[col.field] }}
@@ -166,13 +165,20 @@
        <div class="flex align-center gap-2">
      
               <Skeleton v-if="isLoading" shape="circle" size="2rem" />
-      <Skeleton v-if="isLoading" shape="circle" size="2rem" />
+        <!-- Toggle switch skeleton -->
+      <Skeleton
+        v-if="isLoading"
+        width="3rem"
+        height="2rem"      
+        borderRadius="999px"
+      />
           
       <template v-else>
         <!-- Update -->
          <Button icon="pi pi-pencil" variant="outlined" rounded severity="warning"  size="small" @click="onUpdate(data)" />
-        <!-- Delete -->
-          <Button icon="pi pi-trash" variant="outlined" rounded severity="danger"  size="small" @click="onDelete(data)" />
+        <!-- Active / Inactive -->
+          <ToggleSwitch  :disabled="isToggling" :modelValue="isActive(data.status)"@update:modelValue="val => confirmToggleStatus(data.organization_id
+, val)" />
       </template>
 
        </div>
@@ -188,10 +194,13 @@
 
 <Dialog
   v-model:visible="showCreateDialog"
-  modal
-  header="Create Organization"
-  :style="{ width: '420px' }"
-  :closable="!isPending"
+  modal 
+  dismissableMask
+  :draggable="false"
+   @hide="onDialogClose"
+  :header="isEditMode ? 'Edit Organization' : 'Create Organization'"
+  :style="{ width: '500px' }"
+  :closable="!isCreating"
 >
 
   <div class="flex flex-col gap-4">
@@ -200,27 +209,36 @@
     <div class="flex flex-col gap-1">
       <label class="text-sm font-medium">Organization Name</label>
       <InputText
-        v-model="createForm.name"
+        v-model="name"
         placeholder="Enter organization name"
       />
+      <small v-if="errors.name" class="text-red-500 text-xs">
+  {{ errors.name }}
+</small>
     </div>
 
     <!-- Domain -->
     <div class="flex flex-col gap-1">
       <label class="text-sm font-medium">Domain</label>
       <InputText
-        v-model="createForm.domain"
+        v-model="domain"
         placeholder="example.com"
       />
+      <small v-if="errors.domain" class="text-red-500 text-xs">
+  {{ errors.domain }}
+</small>
     </div>
     
     <!-- Logo URL -->
     <div class="flex flex-col gap-1">
       <label class="text-sm font-medium">Logo URL</label>
       <InputText
-        v-model="createForm.logo_url"
+        v-model="logo_url"
         placeholder="Enter logo URL"
       />
+      <small v-if="errors.logo_url" class="text-red-500 text-xs">
+  {{ errors.logo_url }}
+</small>
     </div>
 
 
@@ -228,13 +246,15 @@
     <div class="flex flex-col gap-1">
       <label class="text-sm font-medium">Status</label>
    <Dropdown
-  v-model="createForm.status"
+  v-model="status"
   :options="statusOptions"
   optionLabel="label"
   optionValue="value"
   placeholder="Select status"
 />
-
+<small v-if="errors.status" class="text-red-500 text-xs">
+  {{ errors.status }}
+</small>
     </div>
 
   </div>
@@ -243,28 +263,36 @@
   <template #footer>
     <div class="flex justify-end gap-2">
       <Button
+        class="text-red-300"
         label="Cancel"
         text
         @click="showCreateDialog = false"
-        :disabled="isPending"
+        :disabled="isCreating"
       />
       <Button
-        label="Create"
+         class="create-org-btn"
+        :label="isEditMode ? 'Update Organization' : 'Create Organization'"
         icon="pi pi-check"
-        :loading="isPending"
+        :loading="isSubmitting || isCreating || isUpdating"
         @click="handleCreateOrganization"
       />
     </div>
   </template>
 </Dialog>
 
-
+<ConfirmDialog />
+<Toast />
 </template>
 
 <script lang="ts" setup>
 import { computed, watch , ref } from "vue";
 import { useOrganizationsQuery } from "@/api/Query/useOrganizationsQuery";
+import { useOrgCreation } from "@/api/Mutation/useOrgCreation";
+import { useOrgUpdate } from "@/api/Mutation/useOrgUpdate";
+import { useOrgToggleStatus } from "@/api/Mutation/useOrgToggleStatus";
 import { useDateFormat } from "@/composables/useDateFormat";
+import { useAppToast } from "@/composables/useAppToast";
+import StatsCards from "@/components/common/StatsCards.vue";
 import DataTable from 'primevue/datatable'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
@@ -272,18 +300,30 @@ import IconField from 'primevue/iconfield'
 import InputText from 'primevue/inputtext'
 import InputIcon from 'primevue/inputicon'
 import Card from 'primevue/card'
-import StatsCards from "@/components/common/StatsCards.vue";
 import Skeleton from 'primevue/skeleton'
-import { useOrgCreation } from "@/api/Mutation/useOrgCreation";
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
-import AutoComplete from 'primevue/autocomplete';
+import ConfirmDialog from 'primevue/confirmdialog';
+import ToggleSwitch from 'primevue/toggleswitch';
+import Toast from 'primevue/toast';
+import { useConfirm } from "primevue/useconfirm";
+import * as yup from 'yup';
+import { useForm, useField } from 'vee-validate';
 
+
+const confirm = useConfirm();
 
 const { formatDateTime } = useDateFormat();
 
+const { successToast , errorToast , infoToast , warnToast  } = useAppToast();
+
 const { data, isLoading, error } = useOrganizationsQuery();
-const { mutate , isPending  , isError  } = useOrgCreation();
+const { mutate:createOrganization , isPending:isCreating  , isError:createError  } = useOrgCreation();
+const { mutate:toggleStatus , isPending:isToggling , isError:toggleError } = useOrgToggleStatus();
+const { mutate:updateOrganization , isPending:isUpdating , isError:updateError } = useOrgUpdate();
+
+
+const isActive = (status: string) => status === 'active'
 
 
 const columns = [
@@ -319,63 +359,161 @@ const organizationStats = computed(() => [
     valueClass: 'text-green-500'
   },
   {
-    label: 'Pending',
-    value: organizations.value.filter(o => o.status === 'Pending').length,
-    valueClass: 'text-orange-500'
+    label: 'Inactive',
+    value: organizations.value.filter(o => o.status === 'inactive').length,
+    valueClass: 'text-red-500'
   }
 ])
 
-
-/* ---------------- ACTION HANDLERS ---------------- */
-
-const onUpdate = (row: any) => {
-  console.log('Update clicked:', row)
-  // call update API
-}
-
-const onDelete = (row: any) => {
-  console.log('Delete clicked:', row)
-  // open confirm dialog
-}
-
 //  organization creation  feature
+
+
+const DialogSchema = yup.object({
+  name: yup.string().required('Organization name is required'),
+  domain: yup.string().required().matches(
+    /^[a-z0-9.-]+\.[a-z]{2,}$/,
+    'Enter a valid domain'
+  ),
+  logo_url: yup.string().required('Logo URL is required').url('Must be a valid URL'),
+  status: yup.string().required('Status is required')
+});
 
 const showCreateDialog = ref(false)
 
-const createForm = ref({
-  name: '',
-  domain: '',
-  logo_url: '',
-  status:'active'
-})
+const {
+  handleSubmit,
+  errors,
+  resetForm,
+  isSubmitting
+} = useForm({
+  validationSchema: DialogSchema,
+  initialValues: {
+    name: '',
+    domain: '',
+    logo_url: '',
+    status: 'active'
+  }
+});
+
+const { value: name } = useField<string>('name')
+const { value: domain } = useField<string>('domain')
+const { value: logo_url } = useField<string>('logo_url')
+const { value: status } = useField<string>('status')
 
 
 const statusOptions = [
   { label: 'Active', value: 'active' },
-  { label: 'Pending', value: 'pending' }
+  { label: 'InActive', value: 'inactive' }
 ]
 
 
-const handleCreateOrganization = () => {
-  console.log('Creating organization with data:', createForm.value)
-
-  mutate(createForm.value, {
-    onSuccess: (data) => {
-      console.log('Organization created successfully:', data)
-      showCreateDialog.value = false
-      // reset form
-      createForm.value = {
-        name: '',
-        domain: '',
-        logo_url: '',
-        status:'active'
+const handleCreateOrganization = handleSubmit((values)=>{
+  
+  if(isEditMode.value && selectedOrgId.value){
+      
+    // UPDATE ORGANIZATION
+    updateOrganization({orgId: selectedOrgId.value ,payload: values}, {
+      onSuccess:(res)=>{
+       successToast('Organization updated', res.message)
+     onDialogClose();
+      },
+      onError:(err)=>{
+        errorToast('Update failed' , err.message );
+        console.error('Error updating organization:', err);
       }
-    },
-    onError: (error) => {
-      console.error('Error creating organization:', error)
+    })
+  }
+  else{
+
+    // CREATE ORGANIZATION
+    createOrganization(values , {
+      onSuccess:(res)=>{
+        showCreateDialog.value = false;
+        onDialogClose();
+        successToast('Organization created', res.message)    
+      },
+      onError:(err)=>{
+         errorToast('creation failed' , err.message );
+        console.error('Error creating organization:', err);
+      }
+    })
+  }
+})
+
+// Dialog box data for organization modification 
+
+const isEditMode = ref(false)
+const selectedOrgId = ref<string | null>(null)
+  
+  const onUpdate = (data: any) => {
+    console.log('Update clicked:', data)
+    
+    isEditMode.value = true;
+    selectedOrgId.value = data.organization_id;
+    showCreateDialog.value = true
+
+  resetForm({
+    values: {
+      name: data.name,
+      domain: data.domain,
+      logo_url: data.logo_url,
+      status: data.status
+    }
+  });
+
+}
+
+
+// Reset and close dialog
+const onDialogClose = () => {
+  showCreateDialog.value = false
+  resetForm({
+    values: {
+      name: '',
+      domain: '',
+      logo_url: '',
+      status: 'active'
     }
   })
+  isEditMode.value = false
+  selectedOrgId.value = null
 }
+
+
+//organization status toggle handler
+
+
+const confirmToggleStatus = (orgId:string , isActive:boolean) =>{
+
+  const newStatus = isActive ? 'active' : 'inactive';
+
+  confirm.require({
+    message: `Are you sure you want to ${newStatus} this organization?`,
+    header: 'Confirm Status Change',
+    icon: 'pi pi-exclamation-triangle',
+    accept:() => {
+   
+  toggleStatus({orgId, status:newStatus} , {
+    onSuccess:()=>{
+      console.log(`Organization ${orgId} status changed to ${newStatus}`);
+      successToast('Status Updated',
+  `Organization status changed to ${newStatus}`);
+    },
+    onError:(err)=>{
+      console.error('Error toggling organization status:', err);
+      warnToast('status change failed' , 'Failed to change organization status');
+    }
+  })
+    
+},
+    reject: () => { 
+   errorToast('Action cancelled' , 'Organization status remains unchanged');
+    }
+})
+
+}
+
+
 
 </script>
 
@@ -404,23 +542,27 @@ const handleCreateOrganization = () => {
 
 /* Header cells */
 :deep(.p-datatable-thead > tr > th) {
-  padding: 12px 14px;
+  padding: 14px 16px;
   font-size: 13px;
-  font-weight: 600;
-  color: #6b7280;
-  background-color: #f9fafb;
-  text-align: left;
-  vertical-align: middle;
-  white-space: nowrap;
+  font-weight: 500;
+  color: #667085;
+  background: #f9fafb;
 }
 
 /* Body cells */
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 12px 14px;
+    padding: 18px 16px;   /* vertical | horizontal */
   font-size: 14px;
-  line-height: 1.5;
+  color: #344054;      /* soft dark */
   vertical-align: middle;
-  white-space: nowrap;
+}
+
+p-datatable-tbody > tr {
+  border-bottom: 1px solid #eaecf0;
+}
+
+.p-datatable-tbody > tr:hover {
+  background: #f9fafb;
 }
 
 :deep(.p-datatable i) {
@@ -442,6 +584,14 @@ const handleCreateOrganization = () => {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
+}
+
+.create-org-btn.p-button{
+  background-color: #2a9d90;
+}
+
+.create-org-btn.p-button:hover{
+  background-color: #138d75;
 }
 
 

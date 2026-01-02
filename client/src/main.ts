@@ -8,6 +8,8 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router'
+import ConfirmationService from 'primevue/confirmationservice';
+import ToastService from 'primevue/toastservice';
 
 const app = createApp(App)
 
@@ -22,4 +24,6 @@ pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(router)
 app.use(VueQueryPlugin)
+app.use(ConfirmationService);
+app.use(ToastService);
 app.mount('#app')

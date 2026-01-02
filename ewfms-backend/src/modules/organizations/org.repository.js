@@ -5,7 +5,7 @@ class OrgRepository {
 
   static async getAllOrgs() {
      const [orgs] = await db.query('SELECT * FROM organization')
-     console.log('🟢🟢🟢' , orgs);
+     
      return orgs;
   }
 
@@ -18,7 +18,6 @@ class OrgRepository {
 
      return await db.query('INSERT INTO organization (organization_id , name , domain , logo_url , status  ) VALUES (? , ? , ? , ? , ? )', [id, name, domain, logo_url, status ]);
      
-
   }
 
   static async findOrgById(id) {
@@ -39,9 +38,15 @@ class OrgRepository {
     );
   }
 
-  static async deleteOrg(id) {
-    return db.query('DELETE FROM organization WHERE organization_id = ?', [id]);
+  static async activeInactiveOrg(id, status) {
+    return db.query(
+      `UPDATE organization 
+             SET status = ?, updated_at = NOW() 
+             WHERE organization_id = ?`,
+      [status, id]
+    );
   }
+  
 
 }  
 

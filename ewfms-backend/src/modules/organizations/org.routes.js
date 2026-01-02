@@ -147,35 +147,59 @@ router.get("/:id",verifyToken, OrgController.findOrgById);
  */
 
 
-
 router.put("/update/:id",verifyToken , OrgController.updateOrg);
 
 /**
  * @swagger
- * /api/orgs/delete/{id}:
- *   delete:
- *     summary: Delete organization by ID
+ * /api/orgs/status/{id}:
+ *   patch:
+ *     summary: Activate or Deactivate Organization
+ *     tags: [Organizations]
  *     security:
  *       - bearerAuth: []
- *     tags:
- *       - Organizations
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: Organization ID
  *         schema:
  *           type: string
+ *           example: "0c12a6ae-7e62-4418-bf28-123456789abc"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive]
+ *                 example: active
  *     responses:
- *       204:
- *         description: Organization deleted successfully
+ *       200:
+ *         description: Organization status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Organization active successfully
+ *       400:
+ *         description: Validation error
  *       401:
- *         description: Unauthorized - Token missing or invalid
- *       404:
- *         description: Organization not found
+ *         description: Unauthorized
  *       500:
- *         description: Server error
+ *         description: Internal server error
  */
 
-router.delete("/delete/:id", verifyToken , OrgController.deleteOrg);
+router.patch("/status/:id",verifyToken , OrgController.activeInactiveOrg);
 
 export default router;
