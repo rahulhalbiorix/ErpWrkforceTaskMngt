@@ -142,4 +142,84 @@ router.get('/:id',verifyToken, UsersController.getUserById);
 
 router.post('/register',verifyToken,allowRoles('Super-Admin' , 'Admin') ,UsersController.registerUser);
 
+/**
+ * @swagger
+ * /api/users/update/{id}:
+ *   put:
+ *     tags:
+ *       - Users
+ *     summary: Update user
+ *     description: Update user details by user ID (Admin & Super-Admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: string
+ *           example: 0c12a6ae-7e62-4418-bf28-123456789abc
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/UpdateUserRequest"
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/SuccessResponse"
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Access denied
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ */
+
+
+router.put('/update/:id',verifyToken,allowRoles('Super-Admin' , 'Admin') ,UsersController.updateUser);
+
+/**
+ * @swagger
+ * /api/users/toggle-status/{id}:
+ *   patch:
+ *     tags:
+ *       - Users
+ *     summary: Toggle user status
+ *     description: Toggle user status between active and inactive
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
+ */
+
+router.patch('/toggle-status/:id',verifyToken,allowRoles('Super-Admin' , 'Admin') ,UsersController.toggleUserStatus);
+
 export default router;

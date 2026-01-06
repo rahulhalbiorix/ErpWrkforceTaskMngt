@@ -8,7 +8,7 @@ class UsersService {
 
     static async getUserById(id) {
         const [user] = await UsersRepository.findUserById(id);
-        return user;
+        return user[0];
     }
 
     static async registerUser( userData) {
@@ -19,6 +19,13 @@ class UsersService {
 
         return UsersRepository.createUser(userData);
     }
+
+   static  async updateUser(userId, userData) {
+         if(!userId) {
+            throw new Error('User ID is required for update');
+         }
+       return UsersRepository.updateUser(userId, userData);
+   }
 
 }
 
