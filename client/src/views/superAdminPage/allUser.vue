@@ -132,16 +132,19 @@
     :draggable="false"
     :closable="true"
     :style="{ width: '400px' }"
-    ></Dialog>
+    >
+     <userCreateUpdateForm></userCreateUpdateForm>
+  </Dialog>
     <ConfirmDialog />
     <Toast />
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch , reactive } from 'vue'
 import { useUserListQuery } from '@/api/Query/useUserListQuery'
 import { useDateFormat } from '@/composables/useDateFormat'
 import StatsCards from '@/components/common/StatsCards.vue'
+import userCreateUpdateForm from '@/components/form/userCreateUpdateForm.vue'
 
 import Dialog from 'primevue/dialog';
 import DataTable from 'primevue/datatable'
@@ -157,8 +160,6 @@ import Toast from 'primevue/toast'
 
 const { formatDateTime } = useDateFormat()
 const { data, isLoading , error } = useUserListQuery()
-
-
 
 const users = computed(() => data.value?.data ?? [])
 
@@ -181,6 +182,7 @@ const userStats = computed(() => [
 ])
 
 const showCreateDialog = ref(false)
+
 
 const onEdit = (user: any) => {
   console.log('Edit user:', user)

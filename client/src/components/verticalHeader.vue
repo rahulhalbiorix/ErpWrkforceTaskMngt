@@ -43,6 +43,11 @@ const menuItems = computed(() => [
     label: isExpanded.value ? 'Tasks' : '',
     icon: 'pi pi-check-square',
     command: () => router.push({ name: 'superAdminTasks' })
+  },
+  {
+    label: isExpanded.value ? 'Excell' : '',
+    icon: 'pi pi-file-excel',
+    command: () => router.push({ name: 'ExcellReader' })
   }
 ])
 

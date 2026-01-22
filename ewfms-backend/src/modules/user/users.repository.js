@@ -20,7 +20,7 @@ class UsersRepository {
 
 
     static async createUser(userData) {
-        const { organization_id, role_id, name , email, password_hash , status } = userData;
+        const { organization_id, role_name, name , email, password_hash , status } = userData;
         return db.query('INSERT INTO user (user_id, organization_id, role_id, name, email, password_hash, status ) VALUES (? , ? , ? , ? , ? , ? , ?)', [UUID() , organization_id, role_id, name , email, password_hash , status ]);
     }
 

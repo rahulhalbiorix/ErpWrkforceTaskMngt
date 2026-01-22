@@ -30,6 +30,11 @@ const SuperAdminRoutes = [
                 path:'tasks',
                 name:'superAdminTasks',
                 component:()=>import('@/views/superAdminPage/Task.vue'),
+            },
+            {
+                path:'excellReader',
+                name:'ExcellReader',
+                component:() => import('@/views/superAdminPage/ExcellRederPage.vue')
             }
         ]
     }
